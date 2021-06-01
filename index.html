@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>ReversiJS</title>
+        <link href="style.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <div id="infoContainer" align="center">
+        </div>
+
+        <div id="buttonContainer" align="center">
+            <button class="button" id="reset">Reset</button>
+            <button class="button" id="rules">Rules</button>
+            <button class="button" id="options">Options</button>
+            <a href="https://github.com/thecsmine/ReversiJS" target="_blank">
+                <button class="button" id="github">GitHub</button>
+            </a>
+        </div>
+        <div id="optionsContainer" align="left">
+            <div>
+                <input type="checkbox" id="highlightHover" checked>
+                <label for="highlightHover">Highlight possible moves on mousehover</label>
+            </div>
+
+            <div>
+                <input type="checkbox" id="highlightCaptured" checked>
+                <label for="highlightCaptured">Highlight captured disks</label>
+            </div>
+
+            <div>
+                <input type="checkbox" id="highlightPossible">
+                <label for="highlightPossible">Highlight all possible moves</label>
+            </div>
+
+            <div>
+                <input type="range" id="alpha" min="0.15" max="0.7" step="any" value="0.3">
+                <label for="alpha">Highlight's alpha</label>
+            </div>
+
+        </div>
+        <div id="rulesContainer" align="left">
+            <h1>Playing the Game</h1>
+            <p>On your turn, place one piece on the board with your color facing up. </p>
+            <p>You must place the piece in such a way that one or more opponent pieces are trapped between
+                two of your pieces. </p>
+            <p>You then turn over all of the opponent pieces trapped in the row between your pieces so they become your
+                color. </p>
+            <p>This is called “capturing” your opponent’s pieces. You can capture rows diagonally, horizontally or
+                vertically. </p>
+            <p>You may capture more than one row of pieces at the same time.</p>
+            <p>If you do not have a legal move, you must pass your turn. </p>
+
+            <h1>Ending the Game</h1>
+            <p>The game ends when all squares are filled in or when neither player has a legal move. </p>
+
+            <h1>Winning the Game </h1>
+            <p>The player who has the most pieces turned to their color at the end of the game is the winner.</p>
+
+        </div>
+        <canvas id="myCanvas"> </canvas>
+        <script src="game.js"></script>
+        <script>
+            var resetButton = document.getElementById("reset");
+            var rulesButton = document.getElementById("rules");
+            var optionsButton = document.getElementById("options");
+            var githubButton = document.getElementById("github");
+            var rulesContainer = document.getElementById("rulesContainer");
+            var optionsContainer = document.getElementById("optionsContainer");
+            var infoContainer = document.getElementById("infoContainer");
+
+            function _reset() {
+                hideInfo();
+                resetGame();
+            }
+
+            function showRules() {
+                hideOptions()
+                if (rulesContainer.style.display == "none") {
+                    rulesContainer.style.display = "block";
+                    rulesButton.classList.add('activeButton');
+                } else {
+                    rulesContainer.style.display = "none";
+                    rulesButton.classList.remove('activeButton');
+                }
+            }
+
+            function showOptions() {
+                hideRules()
+                if (optionsContainer.style.display == "none") {
+                    optionsContainer.style.display = "flex";
+                    optionsButton.classList.add('activeButton');
+                } else {
+                    optionsContainer.style.display = "none";
+                    optionsButton.classList.remove('activeButton');
+                }
+            }
+
+            function hideOptions() {
+                optionsContainer.style.display = "none";
+                optionsButton.classList.remove('activeButton');
+            }
+
+            function hideRules() {
+                rulesContainer.style.display = "none";
+                rulesButton.classList.remove('activeButton');
+            }
+
+            function hideInfo() {
+                infoContainer.innerHTML = "";
+            }
+
+            resetButton.onclick = _reset;
+            rulesButton.onclick = showRules;
+            optionsButton.onclick = showOptions;
+            rulesContainer.style.display = "none";
+            optionsContainer.style.display = "none";
+
+        </script>
+    </body>
+
+</html>
