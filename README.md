@@ -6,7 +6,7 @@ Javascript implementation of the [Connect Four board game](https://en.wikipedia.
 Simply run index.html
 
 ### ONLINE 🌐
-Click [here](link).
+Click [here](https://thecsmine.github.io/ConnectFourJS).
 
 ## Why ❔
 To make little games suitable for a static web page 
