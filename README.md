@@ -17,18 +17,16 @@ To make little games suitable for a static web page
     - [ ] Grid size tweakable 🔳
     - [ ] Highlighting working as intended ⭐
     - [ ] Rules implemented and working as intended 📕
+- [ ] Correct starting position
 - [ ] Change colors 🌈
 - [ ] Add a "show rules" button 📖
 - [ ] Add a reset button 🔁
 - [ ] Add an option button ⚙
-	- [ ] Hightlight mousehover 🌟
-	- [ ] Hightlight captured disks before playing ✨
-    - [ ] Highlight possible moves ✨🌟✨
+	- [ ] Hightlight moves ("falling disk") ⭐
+	- [ ] Hightlight winnable moves 🌟
+	- [ ] Modify grid size ✨
+    - [ ] Modify player turn 🃏
 - [ ] Add more information on win (e.g "[color] cannot play") 🎭
-- [ ] Interface to show move name, function to record move list and to play move list 📃
-    - [ ] Interface to show move
-    - [ ] Register moves
-    - [ ] Play move list
 - [ ] Play with another human online 👬
 - [ ] Implement an AI 🤖
     - [ ] Simple AI
