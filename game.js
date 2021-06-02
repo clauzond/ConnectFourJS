@@ -2,28 +2,27 @@
 const FPS = 30;
 const HEIGHT = 700;
 const WIDTH = 640;
-const GRID_SIZE = 8; // number of rows and columns
+const GRID_SIZE = 7; // number of rows and columns
 
-const CELL = WIDTH / (GRID_SIZE + 2); // size of cell ; 1 cell blank on left and right
+const SIDE_MARGIN = 20;
+const CELL = ((WIDTH - 2*SIDE_MARGIN) / GRID_SIZE); // size of cell ; 1 side margin on left and right
+const TOP_MARGIN = HEIGHT - (GRID_SIZE * CELL) - SIDE_MARGIN;
 const STROKE = CELL / 10; // stroke width (stroke=contour)
 const TILE_STROKE = CELL / 15;
 const DOT = STROKE; // dot radius
 
-const MARGIN = HEIGHT - (GRID_SIZE + 1) * CELL; // top margin, 1 cell free on top
-
-const SCORE_X = WIDTH / 2;
-const SCORE_Y = MARGIN - STROKE;
 const PLAYERTURN_X = WIDTH / 2;
-const PLAYERTURN_Y = STROKE * 1.5;
+const PLAYERTURN_Y = TOP_MARGIN / 2;
 
 const PADDING = 20; // padding in style.css - #myCanvas
 
 // Colors
-const COLOR_BOARD = "#2C5F2D";
-const COLOR_BORDER = "#a87139";
-const COLOR_TILE = "#363636";
-const COLOR_WHITE = "#eeeeee";
-const COLOR_BLACK = "#222222";
+const COLOR_BOARD = "#497ac8";
+const COLOR_BORDER = "#1348a2";
+const COLOR_TILE = "#2C73F7";
+const COLOR_OUTER_TILE = "#1348a2";
+const COLOR_YELLOW = "#fdef08";
+const COLOR_RED = "#d5030e";
 const COLOR_TIE = "#aaaaaa";
 
 // Game Canvas
@@ -40,8 +39,8 @@ var ctx = canv.getContext("2d");
 
 // Game variables
 var playerTurn, diskList, moveList;
-var NumberOfWhite = 0;
-var NumberOfBlack = 0;
+var NUMBER_OF_YELLOW = 0;
+var NUMBER_OF_RED = 0;
 var HIGHLIGHT_HOVER = () => { return document.getElementById("highlightHover").checked };
 var HIGHLIGHT_CAPTURED = () => { return document.getElementById("highlightCaptured").checked };
 var HIGHLIGHT_POSSIBLE = () => { return document.getElementById("highlightPossible").checked };
@@ -64,8 +63,8 @@ function highlightGrid(/** @type {MouseEvent} */ event) {
 
     var canvRect = canv.getBoundingClientRect(); // get mouse position relatively to the canvas
     // get mouse position relative to the canvas
-    let x = event.clientX - canvRect.left - PADDING;
-    let y = event.clientY - canvRect.top - PADDING;
+    let x = event.clientX - canvRect.left;
+    let y = event.clientY - canvRect.top - PADDING; // padding_top
 
     // highlight the possible disk and/or the captured disks
     if (HIGHLIGHT_HOVER() || HIGHLIGHT_CAPTURED() || HIGHLIGHT_POSSIBLE()) {
@@ -139,10 +138,11 @@ function mouseClick(/** @type {MouseEvent} */ event) {
 
     var canvRect = canv.getBoundingClientRect(); // get mouse position relatively to the canvas
     // get mouse position relative to the canvas
-    let x = event.clientX - canvRect.left - PADDING;
+    let x = event.clientX - canvRect.left;
     let y = event.clientY - canvRect.top - PADDING;
 
     var RowCol = getGridRowCol(x, y);
+    console.log(RowCol);
     if (RowCol) {
         [row, col] = RowCol;
         var disk = diskList[row][col];
@@ -157,35 +157,32 @@ function mouseClick(/** @type {MouseEvent} */ event) {
 }
 
 function nextTurn() {
-    if (playerTurn == "white") {
-        playerTurn = "black";
+    if (playerTurn == "yellow") {
+        playerTurn = "red";
     } else {
-        playerTurn = "white";
+        playerTurn = "yellow";
     };
 }
 
 function getGridX(col) {
-    return (CELL * (col + 1)) // there is 1 free tile on the left
+    return (SIDE_MARGIN + CELL * col) // start after magin
 }
 
 function getGridY(row) {
-    return (MARGIN + CELL * row) // start after margin
+    return (TOP_MARGIN + CELL * row) // start after margin
 }
 
 function getGridRowCol(x, y) {
-    // Col -> 1 free cell on the left
-    // Row -> Margin on the top
-
     // Outside the board
-    if (x < CELL || x >= (GRID_SIZE + 1) * CELL) {
+    if (x < SIDE_MARGIN || x >= SIDE_MARGIN + (GRID_SIZE * CELL)) {
         return (null);
-    } else if (y < MARGIN || y >= (MARGIN + (GRID_SIZE * CELL))) {
+    } else if (y < TOP_MARGIN || y >= (TOP_MARGIN + (GRID_SIZE * CELL))) {
         return (null);
     }
 
     // Inside the board
-    var col = Math.floor((x - CELL) / CELL);
-    var row = Math.floor((y - MARGIN) / CELL);
+    var col = Math.floor((x - SIDE_MARGIN) / CELL);
+    var row = Math.floor((y - TOP_MARGIN) / CELL);
 
 
     return [row, col]
@@ -208,9 +205,9 @@ function drawGrid() {
 }
 
 function drawTile(x, y) {
-    ctx.strokeStyle = COLOR_TILE;
-    ctx.lineWidth = TILE_STROKE;
-    ctx.strokeRect(x, y, CELL, CELL);
+    // TODO: Draw tile in a circle pattern
+    drawDisk(x + CELL / 2, y + CELL / 2, COLOR_TILE);
+    drawCircle(x + CELL / 2, y + CELL / 2, COLOR_OUTER_TILE);
 }
 
 function drawDisks() {
@@ -226,23 +223,29 @@ function drawDisk(x, y, color, alpha = 1) {
     ctx.fillStyle = color;
     ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.arc(x, y, (CELL / 2) * 0.9, 0, Math.PI * 2);
+    ctx.arc(x, y, (CELL / 2) * 0.8, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
 }
 
-function drawText() {
-    ctx.strokeStyle = getColor(playerTurn);
-    ctx.font = "48px Garamond";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic"
-    var score = "WHITE " + NumberOfWhite.toString() + " ¤ " + NumberOfBlack.toString() + " BLACK";
-    ctx.strokeText(score, SCORE_X, SCORE_Y, WIDTH);
+function drawCircle(x, y, color, alpha = 1) {
+    // TODO: stroke width?
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = STROKE/2;
+    ctx.beginPath();
+    ctx.arc(x, y, (CELL / 2) * 0.8 + STROKE/2 - 1, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = STROKE;
+}
 
-    ctx.fillStyle = getColor(playerTurn);
+function drawText() {
     ctx.font = "48px Garamond";
-    ctx.textBaseline = "hanging";
-    var turn = (playerTurn == "white" ? "White plays" : "Black plays");
+    ctx.fillStyle = getColor(playerTurn);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    var turn = (playerTurn == "yellow" ? "Yellow plays" : "Red plays");
     ctx.fillText(turn, PLAYERTURN_X, PLAYERTURN_Y, WIDTH);
 }
 
@@ -257,8 +260,8 @@ function drawWinText(player, winCondition, playerTurn) {
         screenText = "IT'S A TIE !";
         infoText += "It's a tie.";
     } else {
-        screenText = (player == "white" ? "WHITE WON !" : "BLACK WON !");
-        infoText += (player == "white" ? "White won." : "Black won.")
+        screenText = (player == "yellow" ? "YELLOW WON !" : "RED WON !");
+        infoText += (player == "yellow" ? "Yellow won." : "Red won.")
     }
     overwriteGameInfo(infoText);
 
@@ -266,27 +269,21 @@ function drawWinText(player, winCondition, playerTurn) {
     drawGrid();
     drawDisks();
     playerTurn = null;
-    ctx.strokeStyle = getColor(player);
     ctx.font = "48px Garamond";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic"
-    var score = "WHITE " + NumberOfWhite.toString() + " ¤ " + NumberOfBlack.toString() + " BLACK";
-    ctx.strokeText(score, SCORE_X, SCORE_Y, WIDTH);
-
     ctx.fillStyle = getColor(player);
     ctx.textAlign = "center";
-    ctx.textBaseline = "hanging";
+    ctx.textBaseline = "middle";
     ctx.fillText(screenText, PLAYERTURN_X, PLAYERTURN_Y, WIDTH);
 
 }
 
 function getColor(playerTurn) {
     switch (playerTurn) {
-        case "white":
-            return (COLOR_WHITE);
+        case "yellow":
+            return (COLOR_YELLOW);
             break;
-        case "black":
-            return (COLOR_BLACK);
+        case "red":
+            return (COLOR_RED);
             break;
         case "tie":
             return (COLOR_TIE);
@@ -343,8 +340,8 @@ function isTilePossible(disk) {
 
 function verifyTile_withDirection(disk, offset_row, offset_col) {
     let list = []; // disk list to add to capturedList
-    let yourColor = (playerTurn == "white") ? "white" : "black";
-    let otherColor = (playerTurn == "white") ? "black" : "white";
+    let yourColor = (playerTurn == "yellow") ? "yellow" : "red";
+    let otherColor = (playerTurn == "yellow") ? "red" : "yellow";
     let thisRow = disk.row + offset_row;
     let thisCol = disk.col + offset_col;
 
@@ -366,17 +363,17 @@ function verifyTile_withDirection(disk, offset_row, offset_col) {
 
 function playTurn(capturedList, event) {
     let p, sum=0;
-    if (playerTurn == "white") {
-        NumberOfWhite += 1;
+    if (playerTurn == "yellow") {
+        NUMBER_OF_YELLOW += 1;
         p = 1;
     } else {
-        NumberOfBlack += 1;
+        NUMBER_OF_RED += 1;
         p = -1;
     }
     for (let disk of capturedList) {
         disk.state = playerTurn;
-        NumberOfWhite += p;
-        NumberOfBlack -= p;
+        NUMBER_OF_YELLOW += p;
+        NUMBER_OF_RED -= p;
         sum += 1;
     }
 
@@ -404,7 +401,7 @@ function isThereAvailableTile() {
 
 function checkForWin(playerTurn) {
     let winCondition;
-    if (NumberOfWhite + NumberOfBlack == GRID_SIZE ** 2) {
+    if (NUMBER_OF_YELLOW + NUMBER_OF_RED == GRID_SIZE ** 2) {
         winCondition = "boardFull";
     } else if (!isThereAvailableTile()) {
         winCondition = "noAvailableTile"
@@ -412,12 +409,12 @@ function checkForWin(playerTurn) {
         return
     }
 
-    if (NumberOfBlack > NumberOfWhite) {
+    if (NUMBER_OF_RED > NUMBER_OF_YELLOW) {
         stopGame();
-        drawWinText(player="black", winCondition=winCondition, playerTurn=playerTurn)
-    } else if (NumberOfWhite > NumberOfBlack) {
+        drawWinText(player="red", winCondition=winCondition, playerTurn=playerTurn)
+    } else if (NUMBER_OF_YELLOW > NUMBER_OF_RED) {
         stopGame();
-        drawWinText(player="white", winCondition=winCondition, playerTurn=playerTurn)
+        drawWinText(player="yellow", winCondition=winCondition, playerTurn=playerTurn)
     } else {
         stopGame();
         drawWinText(player="tie", winCondition=winCondition, playerTurn=playerTurn);
@@ -430,7 +427,7 @@ function overwriteGameInfo(text) {
 }
 
 function newGame() {
-    playerTurn = "black";
+    playerTurn = "red";
     diskList = [];
     moveList = [];
     for (let i = 0; i < GRID_SIZE; i++) { // row
@@ -442,13 +439,13 @@ function newGame() {
 
     m = Math.floor(GRID_SIZE / 2) - 1;
 
-    diskList[m][m].state = "white";
-    diskList[m + 1][m + 1].state = "white";
-    diskList[m][m + 1].state = "black";
-    diskList[m + 1][m].state = "black";
+    diskList[m][m].state = "yellow";
+    diskList[m + 1][m + 1].state = "yellow";
+    diskList[m][m + 1].state = "red";
+    diskList[m + 1][m].state = "red";
 
-    NumberOfBlack = 2;
-    NumberOfWhite = 2;
+    NUMBER_OF_RED = 2;
+    NUMBER_OF_YELLOW = 2;
 
 }
 
