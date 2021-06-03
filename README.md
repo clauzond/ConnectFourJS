@@ -13,12 +13,18 @@ To make little games suitable for a static web page
 
 ## Todo ⏳
 
+- [ ] Play with another human online 👬
+- [ ] Implement an AI 🤖
+    - [ ] Simple AI
+    - [ ] Trained AI
+
+## Done ✔ 
+
 - [x] Game working as intended 💯
     - [x] Grid size tweakable 🔳
     - [x] Highlighting working as intended ⭐
     - [x] Rules implemented and working as intended 📕
 - [x] Correct starting position
-- [ ] Change colors 🌈
 - [x] Add a "show rules" button 📖
 - [x] Add a reset button 🔁
 - [x] Add an option button ⚙
@@ -27,11 +33,3 @@ To make little games suitable for a static web page
 	- [x] Modify grid size ✨
     - [x] Modify player turn 🃏
 - [x] Add more information on win (e.g "[color] cannot play") 🎭
-- [ ] Play with another human online 👬
-- [ ] Implement an AI 🤖
-    - [ ] Simple AI
-    - [ ] Trained AI
-
-## Done ✔ 
-
-- [x] Nothing 😭
