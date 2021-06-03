@@ -39,6 +39,8 @@ const COLOR_OUTER_TILE = COLOR_BORDER;
 const COLOR_YELLOW = "#FCE77D";
 const COLOR_RED = "#F7545C";
 const COLOR_TIE = "#EEEEFF";
+const COLOR_LINE = "#000000";
+
 
 // Game Canvas
 var canv = document.getElementById("myCanvas");
@@ -54,6 +56,7 @@ var ctx = canv.getContext("2d");
 
 // Game variables
 var PLAYER_TURN, STARTING_PLAYER, DISK_LIST, DISK_PER_COLUMN, MOVE_LIST;
+var WINNING_MOVE_LIST = [];
 var NUMBER_OF_YELLOW = 0;
 var NUMBER_OF_RED = 0;
 var HIGHLIGHT_HOVER = () => { return document.getElementById("highlightHover").checked };
@@ -236,6 +239,18 @@ function drawDisks() {
     }
 }
 
+function drawLine(row, col, offset_row, offset_col) {
+    var first_disk = DISK_LIST[row][col];
+    var last_disk = DISK_LIST[row + 3*offset_row][col + 3*offset_col];
+    var x1 = first_disk.x + CELL/2, y1 = first_disk.y + CELL/2;
+    var x2 = last_disk.x + CELL/2, y2 = last_disk.y + CELL/2;
+    ctx.fillStyle = COLOR_LINE
+    ctx.beginPath()
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+}
+
 function drawDisk(x, y, color, alpha = 1) {
     ctx.fillStyle = color;
     ctx.globalAlpha = alpha;
@@ -291,6 +306,12 @@ function drawWinText(player, winCondition) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(screenText, PLAYERTURN_X, PLAYERTURN_Y, WIDTH);
+
+    var row, col, offset_row, offset_col;
+    for (let quadruplet of WINNING_MOVE_LIST) {
+        [row, col, offset_row, offset_col] = quadruplet;
+        drawLine(row, col, offset_row, offset_col);
+    }
 }
 
 function getColor(state) {
@@ -375,6 +396,10 @@ function checkInDirection(row, col, offset_row, offset_col) {
         c += offset_col;
         count++;
     }
+    if (count == 4) {
+        console.log(row, col, offset_row, offset_col);
+        WINNING_MOVE_LIST.push([row, col, offset_row, offset_col]);
+    }
     return (count == 4);
 }
 
@@ -382,14 +407,14 @@ function checkForConnectFour(row, col) {
     var playerChecked = PLAYER_TURN;
     var bool = false;
     // Trigonometry-like rotation to check
-    bool = bool || checkInDirection(row, col, 1, 0);
-    bool = bool || checkInDirection(row, col, 1, 1);
-    bool = bool || checkInDirection(row, col, 0, 1);
-    bool = bool || checkInDirection(row, col, -1, 1);
-    bool = bool || checkInDirection(row, col, -1, 0);
-    bool = bool || checkInDirection(row, col, -1, -1);
-    bool = bool || checkInDirection(row, col, 0, -1);
-    bool = bool || checkInDirection(row, col, 1, -1);
+    bool = checkInDirection(row, col, 1, 0) || bool;
+    bool = checkInDirection(row, col, 1, 1) || bool;
+    bool = checkInDirection(row, col, 0, 1) || bool;
+    bool = checkInDirection(row, col, -1, 1) || bool;
+    bool = checkInDirection(row, col, -1, 0) || bool;
+    bool = checkInDirection(row, col, -1, -1) || bool;
+    bool = checkInDirection(row, col, 0, -1) || bool;
+    bool = checkInDirection(row, col, 1, -1) || bool;
     return (bool ? playerChecked : "");
 }
 
@@ -419,6 +444,7 @@ function newGame() {
     initGrid();
     STARTING_PLAYER = ((!STARTING_PLAYER || STARTING_PLAYER == "red") ? "yellow" : "red");
     PLAYER_TURN = STARTING_PLAYER;
+    WINNING_MOVE_LIST = [];
     DISK_LIST = [];
     MOVE_LIST = [];
     DISK_PER_COLUMN = Array(GRID_SIZE).fill(0);
