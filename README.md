@@ -33,3 +33,4 @@ To make little games suitable for a static web page
 	- [x] Modify grid size ✨
     - [x] Modify player turn 🃏
 - [x] Add more information on win (e.g "[color] cannot play") 🎭
+- [x] Add lines when connect four 〰
