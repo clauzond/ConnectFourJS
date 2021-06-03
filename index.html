@@ -9,6 +9,7 @@
 
     <body>
         <div id="infoContainer" align="center">
+             <!-- Blank space here (alt+255) -->
         </div>
 
         <div id="buttonContainer" align="center">
@@ -22,42 +23,37 @@
         <div id="optionsContainer" align="left">
             <div>
                 <input type="checkbox" id="highlightHover" checked>
-                <label for="highlightHover">Highlight possible moves on mousehover</label>
+                <label for="highlightHover">Highlight possible move</label>
             </div>
 
             <div>
-                <input type="checkbox" id="highlightCaptured" checked>
-                <label for="highlightCaptured">Highlight captured disks</label>
+                <input type="checkbox" id="highlightColumn" checked>
+                <label for="highlightColumn">Highlight column</label>
             </div>
-
+            
             <div>
-                <input type="checkbox" id="highlightPossible">
-                <label for="highlightPossible">Highlight all possible moves</label>
-            </div>
-
-            <div>
-                <input type="range" id="alpha" min="0.15" max="0.7" step="any" value="0.3">
+                <input type="range" id="alpha" min="0.15" max="0.5" step="any" value="0.3">
                 <label for="alpha">Highlight's alpha</label>
+            </div>
+            
+            <div>
+                <input type="range" id="gridSize" min="5" max="30" step="1" value="7" oninput="this.nextElementSibling.value = this.value">
+                <output for="gridSize">Grid size</output>
+            </div>
+            
+            <div>
+                <button class="light_button" id="swapTurn">Swap player turn</button>
             </div>
 
         </div>
         <div id="rulesContainer" align="left">
             <h1>Playing the Game</h1>
-            <p>On your turn, place one piece on the board with your color facing up. </p>
-            <p>You must place the piece in such a way that one or more opponent pieces are trapped between
-                two of your pieces. </p>
-            <p>You then turn over all of the opponent pieces trapped in the row between your pieces so they become your
-                color. </p>
-            <p>This is called “capturing” your opponent’s pieces. You can capture rows diagonally, horizontally or
-                vertically. </p>
-            <p>You may capture more than one row of pieces at the same time.</p>
-            <p>If you do not have a legal move, you must pass your turn. </p>
+            <p>On your turn, drop one piece of your color in the board. Then, it is your opponent's turn.</p>
+            <p>The starting player alternates every game.</p>
 
-            <h1>Ending the Game</h1>
-            <p>The game ends when all squares are filled in or when neither player has a legal move. </p>
-
-            <h1>Winning the Game </h1>
-            <p>The player who has the most pieces turned to their color at the end of the game is the winner.</p>
+            <h1>Ending the Game </h1>
+            <p>A player wins whenever they line up 4 pieces in a row (horizontally, vertically or diagonally).</p>
+            <p>The game ends when either the board is full or a player has won.</p>
 
         </div>
         <canvas id="myCanvas"> </canvas>
