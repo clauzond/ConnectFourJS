@@ -39,7 +39,7 @@ const COLOR_OUTER_TILE = COLOR_BORDER;
 const COLOR_YELLOW = "#FCE77D";
 const COLOR_RED = "#F7545C";
 const COLOR_TIE = "#EEEEFF";
-const COLOR_LINE = "#000000";
+const COLOR_LINE = COLOR_BORDER;
 
 
 // Game Canvas
@@ -56,7 +56,7 @@ var ctx = canv.getContext("2d");
 
 // Game variables
 var PLAYER_TURN, STARTING_PLAYER, DISK_LIST, DISK_PER_COLUMN, MOVE_LIST;
-var WINNING_MOVE_LIST = [];
+var WINNING_DISK_LIST = [];
 var NUMBER_OF_YELLOW = 0;
 var NUMBER_OF_RED = 0;
 var HIGHLIGHT_HOVER = () => { return document.getElementById("highlightHover").checked };
@@ -175,8 +175,10 @@ function nextTurn() {
         return;
     } else if (PLAYER_TURN == "yellow") {
         PLAYER_TURN = "red";
+        SWAP_BUTTON.style.color = COLOR_RED;
     } else {
         PLAYER_TURN = "yellow";
+        SWAP_BUTTON.style.color = COLOR_YELLOW;
     };
 }
 
@@ -239,12 +241,10 @@ function drawDisks() {
     }
 }
 
-function drawLine(row, col, offset_row, offset_col) {
-    var first_disk = DISK_LIST[row][col];
-    var last_disk = DISK_LIST[row + 3*offset_row][col + 3*offset_col];
+function drawWinningLine(first_disk, last_disk) {
     var x1 = first_disk.x + CELL/2, y1 = first_disk.y + CELL/2;
     var x2 = last_disk.x + CELL/2, y2 = last_disk.y + CELL/2;
-    ctx.fillStyle = COLOR_LINE
+    ctx.strokeStyle = COLOR_LINE
     ctx.beginPath()
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
@@ -261,8 +261,7 @@ function drawDisk(x, y, color, alpha = 1) {
 }
 
 function drawCircle(x, y, color, alpha = 1) {
-    // TODO: stroke width?
-    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
     ctx.globalAlpha = alpha;
     ctx.lineWidth = STROKE / 2;
     ctx.beginPath();
@@ -307,10 +306,10 @@ function drawWinText(player, winCondition) {
     ctx.textBaseline = "middle";
     ctx.fillText(screenText, PLAYERTURN_X, PLAYERTURN_Y, WIDTH);
 
-    var row, col, offset_row, offset_col;
-    for (let quadruplet of WINNING_MOVE_LIST) {
-        [row, col, offset_row, offset_col] = quadruplet;
-        drawLine(row, col, offset_row, offset_col);
+    var first_disk, last_disk
+    for (let two_disk of WINNING_DISK_LIST) {
+        [first_disk, last_disk] = two_disk;
+        drawWinningLine(first_disk, last_disk);
     }
 }
 
@@ -384,37 +383,62 @@ function playTurn(row, col, event) {
 
 function checkInDirection(row, col, offset_row, offset_col) {
     var playerChecked = PLAYER_TURN;
-    let r = row;
-    let c = col;
-    let count = 0;
-    while (count < 4 && (0 <= r && r < GRID_SIZE) && (0 <= c && c < GRID_SIZE)) {
-        if (DISK_LIST[r][c].state != playerChecked) {
-            return false;
+    var first_disk, last_disk;
+    let count = 1; // [row][col] is occupied by player
+    
+    // Count backwards
+    let r = row - offset_row;
+    let c = col - offset_col;
+    while ((0 <= r && r < GRID_SIZE) && (0 <= c && c < GRID_SIZE)) {
+        if (DISK_LIST[r][c].state == playerChecked) {
+            count++;
+            first_disk = DISK_LIST[r][c];
+        } else {
+            break;
+        }
+        
+        r -= offset_row;
+        c -= offset_col;
+    }
+
+    if (!first_disk) {
+        first_disk = DISK_LIST[row][col];
+    }
+
+    // Count forwards
+    r = row + offset_row;
+    c = col + offset_col;
+    while ((0 <= r && r < GRID_SIZE) && (0 <= c && c < GRID_SIZE)) {
+        if (DISK_LIST[r][c].state == playerChecked) {
+            count++;
+            last_disk = DISK_LIST[r][c];
+        } else {
+            break;
         }
 
         r += offset_row;
         c += offset_col;
-        count++;
     }
-    if (count == 4) {
-        console.log(row, col, offset_row, offset_col);
-        WINNING_MOVE_LIST.push([row, col, offset_row, offset_col]);
+
+    if (!last_disk) {
+        last_disk = DISK_LIST[row][col];
     }
-    return (count == 4);
+
+    if (count >= 4) {
+        WINNING_DISK_LIST.push([first_disk, last_disk]);
+    }
+    return (count >= 4);
 }
 
 function checkForConnectFour(row, col) {
     var playerChecked = PLAYER_TURN;
     var bool = false;
-    // Trigonometry-like rotation to check
+
+    // Trigonometry-like rotation to check, but checking in straight line (both directions)
     bool = checkInDirection(row, col, 1, 0) || bool;
     bool = checkInDirection(row, col, 1, 1) || bool;
     bool = checkInDirection(row, col, 0, 1) || bool;
     bool = checkInDirection(row, col, -1, 1) || bool;
-    bool = checkInDirection(row, col, -1, 0) || bool;
-    bool = checkInDirection(row, col, -1, -1) || bool;
-    bool = checkInDirection(row, col, 0, -1) || bool;
-    bool = checkInDirection(row, col, 1, -1) || bool;
     return (bool ? playerChecked : "");
 }
 
@@ -444,7 +468,7 @@ function newGame() {
     initGrid();
     STARTING_PLAYER = ((!STARTING_PLAYER || STARTING_PLAYER == "red") ? "yellow" : "red");
     PLAYER_TURN = STARTING_PLAYER;
-    WINNING_MOVE_LIST = [];
+    WINNING_DISK_LIST = [];
     DISK_LIST = [];
     MOVE_LIST = [];
     DISK_PER_COLUMN = Array(GRID_SIZE).fill(0);
