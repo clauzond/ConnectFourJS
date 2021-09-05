@@ -37,6 +37,11 @@ const COLOR_RED = "#F7545C";
 const COLOR_TIE = "#EEEEFF";
 const COLOR_LINE = COLOR_BORDER;
 
+// Emojis
+const EMOJI_YELLOW = "🟡";
+const EMOJI_RED = "🔴";
+const EMOJI_EMPTY = "⚪";
+
 // Game variables
 var PLAYER_TURN, STARTING_PLAYER, DISK_LIST, DISK_PER_COLUMN, MOVE_LIST;
 var WINNING_DISK_LIST = [];
@@ -66,7 +71,7 @@ function mouseClick(/** @type {MouseEvent} */ event) {
     var RowCol = getGridRowCol(x, y);
     if (RowCol) {
         [row, col] = RowCol;
-        playTurn(row, col);
+        playTurn(col);
         registerMove(row, col);
     }
 }
@@ -74,7 +79,7 @@ function mouseClick(/** @type {MouseEvent} */ event) {
 function playMove(col) {
     if (!PLAYER_TURN) return;
     try {
-        playTurn(getPossibleRow(col), col);
+        playTurn(col);
         registerMove(getPossibleRow(col), col);
     } catch (error) {
         console.log("Incorrect move");
@@ -237,6 +242,28 @@ function getColor(state) {
     }
 }
 
+// Emoji functions
+function getEmoji(state) {
+    if (state == "yellow") {
+        return EMOJI_YELLOW;
+    } else if (state == "red") {
+        return EMOJI_RED;
+    } else {
+        return EMOJI_EMPTY;
+    }
+}
+
+function getGameString() {
+    let gameString = "";
+    for (let i = 0; i < GRID_SIZE; i++) { // row
+        for (let j = 0; j < GRID_SIZE; j++) { // column
+            gameString += getEmoji(DISK_LIST[i][j].state);
+        }
+        gameString += "\n"
+    }
+    return gameString;
+}
+
 // Tile object constructor
 function Disk(row, col) {
     this.row = row;
@@ -255,7 +282,9 @@ function Disk(row, col) {
 }
 
 // Game rules
-function playTurn(row, col) {
+function playTurn(col) {
+    let row = getPossibleRow(col);
+    
     if (PLAYER_TURN == "yellow") {
         NUMBER_OF_YELLOW += 1;
     } else {
@@ -268,6 +297,7 @@ function playTurn(row, col) {
     var player = (PLAYER_TURN == "yellow" ? "Yellow" : "Red");
     var sentence = player + " has played in column " + (col + 1);
 
+    loop();
     overwriteGameInfo(sentence);
     checkForWin(row, col);
     nextTurn();
@@ -370,33 +400,24 @@ function newGame() {
             DISK_LIST[i][j] = new Disk(i, j);
         }
     }
-
+    
     NUMBER_OF_RED = 0;
     NUMBER_OF_YELLOW = 0;
+    loop();
 }
 
 function stopGame() {
     PLAYER_TURN = "";
-    clearInterval(runningLoop);
 }
 
 function resetGame() {
     stopGame();
-    startLoop();
     newGame();
     overwriteGameInfo("Game has reset.");
 }
 
 // Start a new game
 newGame();
-
-// Set up the game loop
-function startLoop() {
-    runningLoop = setInterval(loop, 1000 / FPS);
-}
-
-var runningLoop;
-startLoop();
 
 function loop() {
     drawBoard(); // draw background
